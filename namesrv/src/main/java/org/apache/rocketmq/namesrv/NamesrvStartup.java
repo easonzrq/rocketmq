@@ -116,6 +116,8 @@ public class NamesrvStartup {
         JoranConfigurator configurator = new JoranConfigurator();
         configurator.setContext(lc);
         lc.reset();
+
+        //读取日志的配置文件
         configurator.doConfigure(namesrvConfig.getRocketmqHome() + "/conf/logback_namesrv.xml");
 
         log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
@@ -123,6 +125,7 @@ public class NamesrvStartup {
         MixAll.printObjectProperties(log, namesrvConfig);
         MixAll.printObjectProperties(log, nettyServerConfig);
 
+        //namesrvConfig的配置文件，nettyServerConfig这个是netty启动的配置文件
         final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig);
 
         // remember all configs to prevent discard
@@ -137,6 +140,7 @@ public class NamesrvStartup {
             throw new IllegalArgumentException("NamesrvController is null");
         }
 
+        //初始化namesrv
         boolean initResult = controller.initialize();
         if (!initResult) {
             controller.shutdown();
@@ -151,6 +155,7 @@ public class NamesrvStartup {
             }
         }));
 
+        //启动相关的监听相关
         controller.start();
 
         return controller;

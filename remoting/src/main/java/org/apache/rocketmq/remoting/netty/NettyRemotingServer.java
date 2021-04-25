@@ -114,6 +114,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             }
         });
 
+        //初始化worker线程和boss线程处理器
+        //EpollEventLoopGroup在Linux的环境下面要比NioEventLoopGroup要好，这边判断一次来获取更好的服务性能
         if (useEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(1, new ThreadFactory() {
                 private AtomicInteger threadIndex = new AtomicInteger(0);
@@ -154,6 +156,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             });
         }
 
+        //配置HTTPS的信息，跳过不研究先 todo
         loadSslContext();
     }
 
@@ -173,6 +176,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         }
     }
 
+    //判断是不是在linux环境中使用epoll，获取更好的性能
     private boolean useEpoll() {
         return RemotingUtil.isLinuxPlatform()
             && nettyServerConfig.isUseEpollNativeSelector()
@@ -193,6 +197,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                 }
             });
 
+        //初始化请求一些处理器
         prepareSharableHandlers();
 
         ServerBootstrap childHandler =
@@ -232,10 +237,12 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             throw new RuntimeException("this.serverBootstrap.bind().sync() InterruptedException", e1);
         }
 
+        //监听Netty的Event事件
         if (this.channelEventListener != null) {
             this.nettyEventExecutor.start();
         }
 
+        //清理一波超出请求时间的请求
         this.timer.scheduleAtFixedRate(new TimerTask() {
 
             @Override

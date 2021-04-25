@@ -28,6 +28,12 @@ import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.common.protocol.body.KVTable;
 import org.apache.rocketmq.namesrv.NamesrvController;
+
+/**
+ * @description: 配置项管理接口
+ * @params:
+ * @return:
+ */
 public class KVConfigManager {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
@@ -44,6 +50,8 @@ public class KVConfigManager {
     public void load() {
         String content = null;
         try {
+            //每次写入配置文件的时候，他都会持久化
+            //重启的时候直接读取
             content = MixAll.file2String(this.namesrvController.getNamesrvConfig().getKvConfigPath());
         } catch (IOException e) {
             log.warn("Load KV config table exception", e);
@@ -51,6 +59,7 @@ public class KVConfigManager {
         if (content != null) {
             KVConfigSerializeWrapper kvConfigSerializeWrapper =
                 KVConfigSerializeWrapper.fromJson(content, KVConfigSerializeWrapper.class);
+            //key value 读取到配置文件
             if (null != kvConfigSerializeWrapper) {
                 this.configTable.putAll(kvConfigSerializeWrapper.getConfigTable());
                 log.info("load KV config table OK");
